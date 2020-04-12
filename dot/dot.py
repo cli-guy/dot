@@ -30,12 +30,13 @@ def checkout(cfg):
 		print(f"The following files need to be moved \n\n{output}")
 		if input('\nType yes to move them to .old_dotfiles or move then yourself and run checkout again: ') == 'yes':
 
-			if not os.path.isdir(cfg.old_dotfiles):
+			if not os.path.exists(cfg.old_dotfiles):
+				print('Creating .old_files')
 				os.mkdir(cfg.old_dotfiles)
 			for f in output.split('\n'):
 				file_dir = os.path.split(f)[0]
-				if len(file_dir) > 0 and os.path.isdir(os.path.join(cfg.old_dotfiles, file_dir)) == False:
-					os.mkdir(os.path.join(cfg.old_dotfiles, os.path.split(f)[0]))
+				if len(file_dir) > 0 and not os.path.exists(os.path.join(cfg.old_dotfiles, file_dir)):
+					os.makedirs(os.path.join(cfg.old_dotfiles, os.path.split(f)[0]))
 				shutil.move(os.path.join(cfg.home, f), os.path.join(cfg.old_dotfiles, f))
 			checkout(cfg)
 
