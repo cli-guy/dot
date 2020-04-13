@@ -67,7 +67,7 @@ def main():
 		checkout(cfg)
 
 	elif cfg.args[0] == 'ls':
-		response = run(cfg.base_cmd + ["log", "--pretty=format:", "--name-only", "--diff-filter=A"], capture_output=True)
+		response = run(cfg.base_cmd + ["ls-tree", "master", "--name-only", "--full-tree", "-r"], capture_output=True)
 		ls = sorted(response.stdout.decode('utf-8').split('\n'))
 		ls = list(filter(None, ls))
 		print("\n".join(ls))
