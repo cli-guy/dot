@@ -8,14 +8,11 @@ class Config(object):
         if file:
             Config.file_path = file
             Config.has_file  = True
-
         self._load()
-
         if start:
-            self.update(start)
-        
+            self._update(start)
         if from_env:
-            self.parse_env()
+            self._parse_env()
 
     def __getattr__(self, name):
         return self.__dict__.get(name)
@@ -27,20 +24,25 @@ class Config(object):
     def set_file(self, path):
         Config.file_path = path
         Config.has_file = True
+        self._load()
 
-    def rm(self, name):
+    def _rm(self, name):
         self.__dict__.pop(name, None)
         self._save()
 
-    def ls(self):
+    def _ls(self):
         return list(self.__dict__.keys())
 
-    def update(self, value):
+    def _update(self, value):
         self.__dict__.update(value)
         self._save()
 
-    def parse_env(self):
-        for key in self.ls():
+    def _input(self, name, question):
+        if name not in self._ls():
+            self.__setattr__(name, input(f"{question}: "))
+        
+    def _parse_env(self):
+        for key in self._ls():
             if self.__dict__[key] == 'FROM_ENV':
                 self.__dict__[key] = os.environ.get(key.upper(), 'NOT_SET')
 
@@ -49,8 +51,10 @@ class Config(object):
             try:
                 with open(Config.file_path, 'r') as file:
                     self.__dict__.update(json.loads(file.read()))
-            except (json.JSONDecodeError, FileNotFoundError) as e:
+            except FileNotFoundError as e:
                 sys.exit('File not found', Config.file_path)
+            except json.JSONDecodeError as e:
+                sys.exit('Error parsing json ', e)
 
     def _save(self):
         if Config.has_file:
