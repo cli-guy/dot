@@ -1,56 +1,62 @@
 import os
 import sys
 import json
-from pathlib import Path
 
-class Config(dict):
-    """Config Object"""
-    def __init__(self, docstring):
-        self.docstring = docstring
-        self.home = str(Path.home())
-        self.location = os.path.join(self.home, '.dot')
-        self.required = {
-            'repo': 'Please enter the git repo url for your dot files: ',
-            'username': 'Please enter your git username:' ,
-            'email': 'Please enter your git user email address: '
-        }
-        self.map = {
-            "--url" : "repo",
-            "--user": "username",
-            "--email": "email"
-        }
-        __getattr__ = dict.get
-        __delattr__ = dict.__delitem__
+class Config(object):
+    has_file = False
+    def __init__(self, file=None, start=None, from_env=False):
+        if file:
+            Config.file_path = file
+            Config.has_file  = True
+
         self._load()
 
-    def _parse_options(self):
-        for key in self.map.keys():
-            if key in self.args:
-                self.__setattr__(self.map[key], self.args[self.args.index(key)+1], save=True)
+        if start:
+            self.update(start)
+        
+        if from_env:
+            self.parse_env()
 
-    def __setattr__(self, name, value, save=False):
-        entry = {name: value}
-        self.__dict__.update(entry)
-        if save:
-            self.file.update(entry)
-            self._save()
+    def __getattr__(self, name):
+        return self.__dict__.get(name)
+
+    def __setattr__(self, name , value):
+        self.__dict__[name] = value
+        self._save()
+    
+    def set_file(self, path):
+        Config.file_path = path
+        Config.has_file = True
+
+    def rm(self, name):
+        self.__dict__.pop(name, None)
+        self._save()
+
+    def ls(self):
+        return list(self.__dict__.keys())
+
+    def update(self, value):
+        self.__dict__.update(value)
+        self._save()
+
+    def parse_env(self):
+        for key in self.ls():
+            if self.__dict__[key] == 'FROM_ENV':
+                self.__dict__[key] = os.environ.get(key.upper(), 'NOT_SET')
 
     def _load(self):
-        try:
-            with open(self.location, 'r') as file:
-                self.file = json.loads(file.read())
-        except (json.JSONDecodeError, FileNotFoundError) as e:
-            self.file = {}
-        self.__dict__.update(self.file)
-        self.args = sys.argv[1:]
-        if len(self.args) > 0 and self.args[0] == 'init':
-            self._parse_options()
-        for value in self.required:
-            if value not in self.__dict__.keys():
-                self.__setattr__(value, str(input(self.required[value])), save=True)
+        if Config.has_file:
+            try:
+                with open(Config.file_path, 'r') as file:
+                    self.__dict__.update(json.loads(file.read()))
+            except (json.JSONDecodeError, FileNotFoundError) as e:
+                sys.exit('File not found', Config.file_path)
 
     def _save(self):
-        with open(self.location, 'w') as file:
-            file.write(json.dumps(self.file, indent=2))
-
+        if Config.has_file:
+            try:
+                with open(Config.file_path, 'w') as file:
+                    file.write(json.dumps(self.__dict__,sort_keys=True, indent=2))
+            except Exception as e:
+                print(e)
 
