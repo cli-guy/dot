@@ -36,7 +36,7 @@ class Dot(object):
         if not os.path.exists(os.path.join(self.cfg.home, ".cfg")):
             with open(os.path.join(self.cfg.home, '.gitignore'), 'w') as file:
                 file.write(".cfg")
-            clone = self.git(f"git clone --bare {self.cfg.repo} {os.path.join(self.cfg.home, '.cfg')} --verbose")
+            clone = self.git("clone", "--bare", self.cfg.repo, os.path.join(self.cfg.home, '.cfg'), "--verbose")
             if clone.exit_code == 0:
                 self.git('config', '--local', 'status.showUntrackedFiles', 'no')
 
