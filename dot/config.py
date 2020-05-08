@@ -52,7 +52,8 @@ class Config(object):
                 with open(Config.file_path, 'r') as file:
                     self.__dict__.update(json.loads(file.read()))
             except FileNotFoundError as e:
-                sys.exit('File not found', Config.file_path)
+                # sys.exit('File not found', Config.file_path)
+                pass
             except json.JSONDecodeError as e:
                 sys.exit('Error parsing json ', e)
 
