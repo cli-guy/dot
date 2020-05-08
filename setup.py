@@ -8,7 +8,7 @@ setup(
     license='GPLv3',
     packages=find_packages(),
     author_email='james@mightysteedit.co.uk',
-    install_requires=[],
+    install_requires=["sh"],
     url="https://github.com/cli-guy/dot",
     entry_points = {
         'console_scripts' : ['dot = dot.dot:main']
