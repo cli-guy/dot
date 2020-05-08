@@ -24,7 +24,7 @@ class Dot(object):
         self.git_commands = ['add','am','apply','archive','bisect','blame','branch','bundle','cherry','cherry-pick','citool','clean','clone','commit','config','describe','diff','difftool','fetch','format-patch','fsck','gc','gitk','grep','gui','help','init','instaweb','log', 'ls-tree', 'merge','mergetool','mv','notes','pull','push','range-diff','rebase','reflog','remote','repack','replace','request-pull','reset','revert','rm','send-email','shortlog','show','show-branch','stage','stash','status','submodule','tag','whatchanged','worktree',]
         self.git = sh.git.bake(f"--git-dir={os.path.join(self.cfg.home, '.cfg')}",  f"--work-tree={self.cfg.home}", "-c", f"user.name={self.cfg.username}", "-c", f"user.email={self.cfg.email}")
         self.commands = ['status', 'load', 'save', 'ls']
-        
+        check_create_repo()
         if len(self.args) > 0 and self.args[0] in self.commands:
            self.__getattribute__(self.args[0])()
         elif len(self.args) > 0 and self.args[0] in self.git_commands:
@@ -32,12 +32,13 @@ class Dot(object):
         else:
             self.status()
 
-    def create_repo(self):
-        with open(os.path.join(self.cfg.home, '.gitignore'), 'w') as file:
-            file.write(".cfg")
-        clone = self.git(f"git clone --bare {self.cfg.repo} {os.path.join(self.cfg.home, '.cfg')} --verbose")
-        if clone.exit_code == 0:
-            self.git('config', '--local', 'status.showUntrackedFiles', 'no')
+    def check_create_repo(self):
+        if not os.path.exists(self.cfg.home):
+            with open(os.path.join(self.cfg.home, '.gitignore'), 'w') as file:
+                file.write(".cfg")
+            clone = self.git(f"git clone --bare {self.cfg.repo} {os.path.join(self.cfg.home, '.cfg')} --verbose")
+            if clone.exit_code == 0:
+                self.git('config', '--local', 'status.showUntrackedFiles', 'no')
 
     def status(self):
         print(self.git.status())
@@ -65,7 +66,6 @@ class Dot(object):
 
     def save(self):
         status = self.git.status().split('\n')
-        print(status)
         if status[1].startswith("Changes"):
             status = [x.replace('\t', '') for x in status[3:-3]]
             print("\n".join(status))
