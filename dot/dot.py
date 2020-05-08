@@ -33,7 +33,7 @@ class Dot(object):
             self.status()
 
     def check_create_repo(self):
-        if not os.path.exists(self.cfg.home):
+        if not os.path.exists(os.path.join(self.cfg.home, ".cfg")):
             with open(os.path.join(self.cfg.home, '.gitignore'), 'w') as file:
                 file.write(".cfg")
             clone = self.git(f"git clone --bare {self.cfg.repo} {os.path.join(self.cfg.home, '.cfg')} --verbose")
