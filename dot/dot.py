@@ -30,7 +30,7 @@ class Dot(object):
         elif len(self.args) > 0 and self.args[0] in self.git_commands:
             print(self.git(*self.args))
         else:
-            self.status("-s")
+            self.status()
 
     def check_create_repo(self):
         if not os.path.exists(os.path.join(self.cfg.home, ".cfg")):
