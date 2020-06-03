@@ -39,6 +39,7 @@ class Dot(object):
             clone = self.git("clone", "--bare", self.cfg.repo, os.path.join(self.cfg.home, '.cfg'), "--verbose")
             if clone.exit_code == 0:
                 self.git('config', '--local', 'status.showUntrackedFiles', 'no')
+                self.git.checkout("master", ".")
 
     def status(self):
         print(self.git.status())
@@ -46,36 +47,9 @@ class Dot(object):
     def revert(self):
         sh.rm('-r', f'{self.cfg.home}/.gitignore', f'{self.cfg.home}/.cfg')
 
-    def load(self):
-        checkout = self.git.checkout()
-        if checkout.exit_code == 0:
-            print('Load completed.')
-        else:
-            output = checkout.stderr.split("checkout:\n")[1].split("\nPlease move or")[0].replace('\t', "")
-            print(f"The following files need to be moved \n\n{output}")
-            if input('\nType yes to move them to .old_dotfiles or move then yourself and run checkout again: ') == 'yes':
-                if not os.path.exists(self.cfg.old_dotfiles):
-                    print('Creating .old_files')
-                    os.mkdir(self.cfg.old_dotfiles)
-                for f in output.split('\n'):
-                    file_dir = os.path.split(f)[0]
-                    if len(file_dir) > 0 and not os.path.exists(os.path.join(self.cfg.old_dotfiles, file_dir)):
-                        os.makedirs(os.path.join(self.cfg.old_dotfiles, os.path.split(f)[0]))
-                    shutil.move(os.path.join(self.cfg.home, f), os.path.join(self.cfg.old_dotfiles, f))
-                self.load()
-
-    def save(self):
-        status = self.git.status().split('\n')
-        if status[1].startswith("Changes"):
-            status = [x.replace('\t', '') for x in status[3:-3]]
-            print("\n".join(status))
-            self.git.commit("-a", "-m", str(datetime.datetime.now()))
-            self.git.push("origin", "master")
-
     def ls(self):
         print('Files currently being tracked by dot:')
         print(self.git("ls-tree", "master", "--name-only", "--full-tree", "-r"))
-
 
 def main():
     Dot()
