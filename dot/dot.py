@@ -9,7 +9,7 @@ import sh
 import sys
 import shutil
 import datetime
-from subprocess import call
+from subprocess import run
 from dot.config import Config
 
 
