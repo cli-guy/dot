@@ -9,6 +9,7 @@ import sh
 import sys
 import shutil
 import datetime
+from subprocess import call
 from dot.config import Config
 
 
@@ -37,7 +38,8 @@ class Dot(object):
             with open(os.path.join(self.cfg.home, '.gitignore'), 'w') as file:
                 file.write(".cfg")
             clone = self.git("clone", "--bare", self.cfg.repo, os.path.join(self.cfg.home, '.cfg'), "--verbose")
-            if clone.exit_code == 0:
+            clone = call(["clone", "--bare", self.cfg.repo, os.path.join(self.cfg.home, '.cfg')])
+            if clone.returncode == 0:
                 self.git('config', '--local', 'status.showUntrackedFiles', 'no')
                 self.git.checkout("master", ".")
 
