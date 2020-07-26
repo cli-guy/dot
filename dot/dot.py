@@ -5,55 +5,45 @@
 __version__ = '1.0'
 
 import os
-import sh
 import sys
 import shutil
-import datetime
 from subprocess import run
-from dot.config import Config
+from jpconfig import Config
 
 
 class Dot(object):
     def __init__(self):
-        self.cfg = Config(start={'home': 'FROM_ENV'}, from_env=True)
-        self.cfg.set_file(os.path.join(self.cfg.home, '.dot'))
-        self.cfg.old_dotfiles = os.path.join(self.cfg.home, ".old_dotfiles")
-        self.cfg._input('username', 'What\'s your full name for git')
-        self.cfg._input('repo', 'What\'s your git repository url')
-        self.cfg._input('email', 'What\'s your email')
+        self.home  = os.environ('HOME')
+        self.local = os.path.join(self.home, '.cfg')
+        self.old_dotfiles = os.path.join(self.home, ".old_dotfiles")
+        self.cfg   = Config(os.path.join(self.home, '.dot'))
+        self.cfg.username = input('What\'s your full name for git')
+        self.cfg.remote = input('What\'s your git repository url')
+        self.cfg.email = input('What\'s your email')
         self.args = sys.argv[1:]
         self.git_commands = ['add','am','apply','archive','bisect','blame','branch','bundle', 'checkout', 'cherry','cherry-pick','citool','clean','clone','commit','config','describe','diff','difftool','fetch','format-patch','fsck','gc','gitk','grep','gui','help','init','instaweb','log', 'ls-tree', 'merge','mergetool','mv','notes','push','range-diff','rebase','reflog','remote','repack','replace','request-pull','reset','revert','rm','send-email','shortlog','show','show-branch','stage','stash','status','submodule','tag','whatchanged','worktree',]
-        self.git = sh.git.bake(f"--git-dir={os.path.join(self.cfg.home, '.cfg')}",  f"--work-tree={self.cfg.home}", "-c", f"user.name={self.cfg.username}", "-c", f"user.email={self.cfg.email}")
-        self.commands = ['status', 'ls', 'pull']
+        self.git_opts = ["git", "--git-dir={self.local}",  f"--work-tree={self.home}", "-c", f"user.name={self.cfg.username}", "-c", f"user.email={self.cfg.email}"]
+        self.commands = ['ls']
         self.check_create_repo()
         if len(self.args) > 0 and self.args[0] in self.commands:
            self.__getattribute__(self.args[0])()
         elif len(self.args) > 0 and self.args[0] in self.git_commands:
-            print(self.git(*self.args))
+            run(self.git_opts + self.args)
         else:
-            self.status()
+            run(self.git_opts + ['status', '-s'])
 
     def check_create_repo(self):
-        if not os.path.exists(os.path.join(self.cfg.home, ".cfg")):
+        if not os.path.exists(self.local)):
             with open(os.path.join(self.cfg.home, '.gitignore'), 'w') as file:
                 file.write(".cfg")
-            clone = run(["git", "clone", "--bare", self.cfg.repo, os.path.join(self.cfg.home, '.cfg')])
+            clone = run(["git", "clone", "--bare", self.cfg.remote, self.local)])
             if clone.returncode == 0:
-                self.git('config', '--local', 'status.showUntrackedFiles', 'no')
-                self.git.checkout("master", ".")
-
-    def status(self):
-        print(self.git.status("-s"))
-
-    def pull(self):
-        run(['git', 'pull', 'origin', 'master'])
-
-    def revert(self):
-        sh.rm('-r', f'{self.cfg.home}/.gitignore', f'{self.cfg.home}/.cfg')
+                run(self.git_opts + ['config', '--local', 'status.showUntrackedFiles', 'no'])
+                run(self.git_opts + ["master", "."])
 
     def ls(self):
         print('Files currently being tracked by dot:')
-        print(self.git("ls-tree", "master", "--name-only", "--full-tree", "-r"))
+        run(self.git_opts + ["ls-tree", "master", "--name-only", "--full-tree", "-r"))
 
 def main():
     Dot()
