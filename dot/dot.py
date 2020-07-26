@@ -33,17 +33,17 @@ class Dot(object):
             run(self.git_opts + ['status', '-s'])
 
     def check_create_repo(self):
-        if not os.path.exists(self.local)):
+        if not os.path.exists(self.local):
             with open(os.path.join(self.cfg.home, '.gitignore'), 'w') as file:
                 file.write(".cfg")
-            clone = run(["git", "clone", "--bare", self.cfg.remote, self.local)])
+            clone = run(["git", "clone", "--bare", self.cfg.remote, self.local])
             if clone.returncode == 0:
                 run(self.git_opts + ['config', '--local', 'status.showUntrackedFiles', 'no'])
                 run(self.git_opts + ["master", "."])
 
     def ls(self):
         print('Files currently being tracked by dot:')
-        run(self.git_opts + ["ls-tree", "master", "--name-only", "--full-tree", "-r"))
+        run(self.git_opts + ["ls-tree", "master", "--name-only", "--full-tree", "-r"])
 
 def main():
     Dot()
