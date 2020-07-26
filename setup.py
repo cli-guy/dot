@@ -11,6 +11,6 @@ setup(
     install_requires=["jp-config"],
     url="https://github.com/cli-guy/dot",
     entry_points = {
-        'console_scripts' : ['dot = dot.dot:main']
+        'console_scripts' : ['dot = jpdot.jpdot:main']
     }
     )
