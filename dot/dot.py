@@ -13,7 +13,7 @@ from jpconfig import Config
 
 class Dot(object):
     def __init__(self):
-        self.home  = os.environ('HOME')
+        self.home  = os.environ['HOME']
         self.local = os.path.join(self.home, '.cfg')
         self.old_dotfiles = os.path.join(self.home, ".old_dotfiles")
         self.cfg   = Config(os.path.join(self.home, '.dot'))
