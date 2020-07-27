@@ -9,6 +9,7 @@ setup(
     packages=find_packages(),
     author_email='james@mightysteedit.co.uk',
     install_requires=["jp-config"],
+    py_modules=['jpdot.jpdot'],
     url="https://github.com/cli-guy/dot",
     entry_points = {
         'console_scripts' : ['dot = jpdot.jpdot:main']
